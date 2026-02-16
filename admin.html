@@ -2,108 +2,161 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم المشرف</title>
+    <title>لوحة التحكم الإدارية</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #F7F9FC; padding: 20px; text-align: center; }
-        .login-box, .admin-panel { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
-        .admin-panel { display: none; }
-        input, button { padding: 12px; margin: 10px; border-radius: 8px; border: 1px solid #ddd; }
-        button { background: #004e64; color: white; cursor: pointer; border: none; font-weight: bold; }
-        button.delete { background: #c62828; }
-        button.toggle { background: #f9a825; color: #004e64; }
+        body { font-family: 'Tajawal', sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
+        .container { max-width: 900px; margin: auto; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        /* نظام الفورم */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; width: 100%; box-sizing: border-box; }
+        textarea { grid-column: span 2; height: 80px; }
+        .full-width { grid-column: span 2; }
+        
+        button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: #004e64; color: white; width: 100%; margin-top: 10px; }
+        .btn-edit { background: #f9a825; color: #004e64; }
+        .btn-del { background: #d32f2f; color: white; }
+        .btn-status { background: #eee; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
         th { background: #004e64; color: white; }
+        .edit-active { border: 2px solid #f9a825; background: #fffdf0; }
     </style>
 </head>
 <body>
 
-    <div id="loginBox" class="login-box">
-        <h2>ادخل كلمة المرور للإدارة</h2>
-        <input type="password" id="pass" placeholder="كلمة المرور">
-        <button onclick="checkPass()">دخول</button>
+<div class="container">
+    <div id="loginSection" class="box" style="text-align:center;">
+        <h2>🔐 دخول المشرف</h2>
+        <input type="password" id="adminPass" placeholder="كلمة المرور" style="width:250px;">
+        <button onclick="login()" class="btn-add" style="width:250px;">دخول</button>
     </div>
 
-    <div id="adminPanel" class="admin-panel">
-        <h2>لوحة تحكم الأنشطة 🛠️</h2>
-        
-        <div style="background: #f0f4f7; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-            <h3>إضافة نشاط جديد</h3>
-            <input type="text" id="t" placeholder="العنوان">
-            <input type="text" id="i" placeholder="رابط الصورة">
-            <input type="text" id="d" placeholder="التاريخ">
-            <input type="text" id="l" placeholder="رابط التسجيل">
-            <button onclick="addActivity()">إضافة ونشر 🚀</button>
+    <div id="adminSection" style="display:none;">
+        <div class="box" id="formBox">
+            <h2 id="formTitle">إضافة نشاط جديد</h2>
+            <div class="form-grid">
+                <input type="hidden" id="actId">
+                <input type="text" id="title" placeholder="اسم النشاط">
+                <input type="text" id="img" placeholder="رابط الصورة">
+                <input type="text" id="day" placeholder="اليوم والتاريخ">
+                <input type="text" id="time" placeholder="الساعة">
+                <input type="text" id="loc" placeholder="المكان" value="نادي المعهد">
+                <input type="text" id="link" placeholder="رابط التسجيل">
+                <textarea id="desc" placeholder="تفاصيل النشاط (اختياري)"></textarea>
+                <button onclick="saveActivity()" id="saveBtn" class="btn-add full-width">حفظ ونشر النشاط</button>
+                <button onclick="cancelEdit()" id="cancelBtn" class="full-width" style="display:none; background:#999; color:white;">إلغاء التعديل</button>
+            </div>
         </div>
 
-        <h3>الأنشطة الحالية</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>النشاط</th>
-                    <th>الحالة</th>
-                    <th>الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody id="list"></tbody>
-        </table>
-    </div>
-
-    <script>
-        const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        function checkPass() {
-            if(document.getElementById('pass').value === '29112002') {
-                document.getElementById('loginBox').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                fetchActivities();
-            } else { alert("كلمة المرور خاطئة!"); }
-        }
-
-        async function fetchActivities() {
-            const { data } = await _supabase.from('activities').select('*').order('id', { ascending: false });
-            const list = document.getElementById('list');
-            list.innerHTML = "";
-            data.forEach(act => {
-                list.innerHTML += `
+        <div class="box">
+            <h3>الأنشطة المضافة</h3>
+            <table>
+                <thead>
                     <tr>
-                        <td>${act.title}</td>
-                        <td style="color:${act.is_open ? 'green':'red'}">${act.is_open ? 'مفتوح':'مغلق'}</td>
-                        <td>
-                            <button class="toggle" onclick="toggleStatus(${act.id}, ${act.is_open})">تغيير الحالة</button>
-                            <button class="delete" onclick="deleteAct(${act.id})">حذف</button>
-                        </td>
+                        <th>النشاط</th>
+                        <th>الحالة</th>
+                        <th>التحكم</th>
                     </tr>
-                `;
-            });
-        }
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-        async function addActivity() {
-            await _supabase.from('activities').insert([{ 
-                title: document.getElementById('t').value, 
-                image_url: document.getElementById('i').value, 
-                day_date: document.getElementById('d').value, 
-                reg_link: document.getElementById('l').value,
-                is_open: true 
-            }]);
-            fetchActivities();
-        }
+<script>
+    const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function toggleStatus(id, current) {
-            await _supabase.from('activities').update({ is_open: !current }).eq('id', id);
-            fetchActivities();
-        }
+    function login() {
+        if(document.getElementById('adminPass').value === '29112002') {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            loadTable();
+        } else { alert("خطأ في كلمة المرور!"); }
+    }
 
-        async function deleteAct(id) {
-            if(confirm("هل أنت متأكد من الحذف؟")) {
-                await _supabase.from('activities').delete().eq('id', id);
-                fetchActivities();
-            }
+    async function loadTable() {
+        const { data } = await _supabase.from('activities').select('*').order('id', {ascending: false});
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = data.map(act => `
+            <tr>
+                <td>${act.title}</td>
+                <td style="color:${act.is_open ? 'green':'red'}">${act.is_open ? 'مفتوح':'مغلق'}</td>
+                <td>
+                    <button class="btn-edit" onclick='editMode(${JSON.stringify(act)})'>تعديل</button>
+                    <button class="btn-status" onclick="toggleStatus(${act.id}, ${act.is_open})">⚙️</button>
+                    <button class="btn-del" onclick="deleteAct(${act.id})">حذف</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function saveActivity() {
+        const id = document.getElementById('actId').value;
+        const obj = {
+            title: document.getElementById('title').value,
+            image_url: document.getElementById('img').value,
+            day_date: document.getElementById('day').value,
+            activity_time: document.getElementById('time').value,
+            location: document.getElementById('loc').value,
+            reg_link: document.getElementById('link').value,
+            details: document.getElementById('desc').value
+        };
+
+        if(id) {
+            await _supabase.from('activities').update(obj).eq('id', id);
+        } else {
+            await _supabase.from('activities').insert([obj]);
         }
-    </script>
+        cancelEdit();
+        loadTable();
+    }
+
+    function editMode(act) {
+        document.getElementById('formTitle').innerText = "تعديل النشاط";
+        document.getElementById('formBox').classList.add('edit-active');
+        document.getElementById('actId').value = act.id;
+        document.getElementById('title').value = act.title;
+        document.getElementById('img').value = act.image_url;
+        document.getElementById('day').value = act.day_date;
+        document.getElementById('time').value = act.activity_time;
+        document.getElementById('loc').value = act.location;
+        document.getElementById('link').value = act.reg_link;
+        document.getElementById('desc').value = act.details;
+        document.getElementById('saveBtn').innerText = "تحديث البيانات";
+        document.getElementById('cancelBtn').style.display = "block";
+        window.scrollTo(0,0);
+    }
+
+    function cancelEdit() {
+        document.getElementById('actId').value = "";
+        document.getElementById('formTitle').innerText = "إضافة نشاط جديد";
+        document.getElementById('formBox').classList.remove('edit-active');
+        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+        document.getElementById('loc').value = "نادي المعهد";
+        document.getElementById('saveBtn').innerText = "حفظ ونشر النشاط";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    async function toggleStatus(id, current) {
+        await _supabase.from('activities').update({ is_open: !current }).eq('id', id);
+        loadTable();
+    }
+
+    async function deleteAct(id) {
+        if(confirm("هل أنت متأكد من حذف هذا النشاط؟")) {
+            await _supabase.from('activities').delete().eq('id', id);
+            loadTable();
+        }
+    }
+</script>
 </body>
 </html>
