@@ -2,23 +2,53 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم - إضافة نشاط</title>
+    <title>لوحة تحكم المشرف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: #004e64; color: white; padding: 20px; text-align: center; }
-        .form-container { background: white; color: #333; padding: 30px; border-radius: 15px; max-width: 450px; margin: auto; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: #f9a825; color: #004e64; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        body { font-family: 'Tajawal', sans-serif; background: #F7F9FC; padding: 20px; text-align: center; }
+        .login-box, .admin-panel { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }
+        .admin-panel { display: none; }
+        input, button { padding: 12px; margin: 10px; border-radius: 8px; border: 1px solid #ddd; }
+        button { background: #004e64; color: white; cursor: pointer; border: none; font-weight: bold; }
+        button.delete { background: #c62828; }
+        button.toggle { background: #f9a825; color: #004e64; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: center; }
+        th { background: #004e64; color: white; }
     </style>
 </head>
 <body>
-    <h2>إضافة نشاط جديد للسوبر بيز</h2>
-    <div class="form-container">
-        <input type="text" id="t" placeholder="اسم النشاط">
-        <input type="text" id="i" placeholder="رابط الصورة">
-        <input type="text" id="d" placeholder="اليوم والتاريخ">
-        <input type="text" id="l" placeholder="رابط التسجيل">
-        <button onclick="save()">نشر النشاط الآن 🚀</button>
+
+    <div id="loginBox" class="login-box">
+        <h2>ادخل كلمة المرور للإدارة</h2>
+        <input type="password" id="pass" placeholder="كلمة المرور">
+        <button onclick="checkPass()">دخول</button>
+    </div>
+
+    <div id="adminPanel" class="admin-panel">
+        <h2>لوحة تحكم الأنشطة 🛠️</h2>
+        
+        <div style="background: #f0f4f7; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h3>إضافة نشاط جديد</h3>
+            <input type="text" id="t" placeholder="العنوان">
+            <input type="text" id="i" placeholder="رابط الصورة">
+            <input type="text" id="d" placeholder="التاريخ">
+            <input type="text" id="l" placeholder="رابط التسجيل">
+            <button onclick="addActivity()">إضافة ونشر 🚀</button>
+        </div>
+
+        <h3>الأنشطة الحالية</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>النشاط</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
     </div>
 
     <script>
@@ -26,18 +56,53 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function save() {
-            const { error } = await _supabase
-                .from('activities')
-                .insert([{ 
-                    title: document.getElementById('t').value, 
-                    image_url: document.getElementById('i').value, 
-                    day_date: document.getElementById('d').value, 
-                    reg_link: document.getElementById('l').value 
-                }]);
+        function checkPass() {
+            if(document.getElementById('pass').value === '29112002') {
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                fetchActivities();
+            } else { alert("كلمة المرور خاطئة!"); }
+        }
 
-            if (error) alert("خطأ: " + error.message);
-            else alert("تم النشر بنجاح!");
+        async function fetchActivities() {
+            const { data } = await _supabase.from('activities').select('*').order('id', { ascending: false });
+            const list = document.getElementById('list');
+            list.innerHTML = "";
+            data.forEach(act => {
+                list.innerHTML += `
+                    <tr>
+                        <td>${act.title}</td>
+                        <td style="color:${act.is_open ? 'green':'red'}">${act.is_open ? 'مفتوح':'مغلق'}</td>
+                        <td>
+                            <button class="toggle" onclick="toggleStatus(${act.id}, ${act.is_open})">تغيير الحالة</button>
+                            <button class="delete" onclick="deleteAct(${act.id})">حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function addActivity() {
+            await _supabase.from('activities').insert([{ 
+                title: document.getElementById('t').value, 
+                image_url: document.getElementById('i').value, 
+                day_date: document.getElementById('d').value, 
+                reg_link: document.getElementById('l').value,
+                is_open: true 
+            }]);
+            fetchActivities();
+        }
+
+        async function toggleStatus(id, current) {
+            await _supabase.from('activities').update({ is_open: !current }).eq('id', id);
+            fetchActivities();
+        }
+
+        async function deleteAct(id) {
+            if(confirm("هل أنت متأكد من الحذف؟")) {
+                await _supabase.from('activities').delete().eq('id', id);
+                fetchActivities();
+            }
         }
     </script>
 </body>
