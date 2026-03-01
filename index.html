@@ -119,7 +119,6 @@
         .btn-reg:hover { background: var(--accent); }
         .disabled { background: #ccc !important; pointer-events: none; }
         
-        /* New Countdown Timer Styles */
         .countdown-timer {
             background-color: #fff4e3;
             border: 1px solid var(--accent);
@@ -153,29 +152,36 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
 
-        // Function to start a countdown for a specific activity
         function startCountdown(activityId, endTime) {
             const countdownElement = document.getElementById(`timer-${activityId}`);
+            if (!countdownElement) return; 
+
             const statusElement = document.getElementById(`status-${activityId}`);
             const buttonElement = document.getElementById(`button-${activityId}`);
-            
+            const targetTime = new Date(endTime).getTime();
+
             const interval = setInterval(() => {
                 const now = new Date().getTime();
-                const distance = new Date(endTime).getTime() - now;
+                const distance = targetTime - now;
 
                 if (distance < 0) {
                     clearInterval(interval);
                     countdownElement.innerHTML = "انتهى وقت التسجيل";
-                    
-                    // Update UI to "Closed"
-                    statusElement.textContent = '● التسجيل مغلق';
-                    statusElement.className = 'status-tag closed';
-                    buttonElement.textContent = 'عذراً، التسجيل مغلق';
-                    buttonElement.classList.add('disabled');
-                    buttonElement.href = '#';
-
-                    // Update the database
-                    _supabase.from('activities').update({ is_open: false }).eq('id', activityId).then();
+                    if (statusElement) {
+                        statusElement.textContent = '● التسجيل مغلق';
+                        statusElement.className = 'status-tag closed';
+                    }
+                    if (buttonElement) {
+                        buttonElement.textContent = 'عذراً، التسجيل مغلق';
+                        buttonElement.classList.add('disabled');
+                        buttonElement.href = '#';
+                    }
+                    // Update the database only if it's currently open
+                    _supabase.from('activities').select('is_open').eq('id', activityId).single().then(({data}) => {
+                        if(data && data.is_open) {
+                            _supabase.from('activities').update({ is_open: false }).eq('id', activityId).then();
+                        }
+                    });
                     return;
                 }
 
@@ -190,21 +196,27 @@
                 else timerText += `${minutes} دقيقة و ${seconds} ثانية`;
                 
                 countdownElement.innerHTML = `<i class="fas fa-hourglass-half"></i> ${timerText}`;
-
             }, 1000);
         }
 
         async function loadActivities() {
+            console.log("بدء تحميل الأنشطة...");
             const { data, error } = await _supabase
                 .from('activities')
                 .select('*')
                 .order('id', { ascending: false });
 
+            if (error) {
+                console.error("خطأ في جلب البيانات:", error);
+                return;
+            }
+
+            // **هذا السطر مهم جداً للتشخيص**
+            console.log("البيانات التي تم جلبها من Supabase:", data); 
+
             const grid = document.getElementById('activitiesGrid');
-            
             if (data && data.length > 0) {
                 grid.innerHTML = data.map(act => {
-                    // Check if the activity should be closed based on end_time
                     const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
                     const isOpen = act.is_open && !isTimeUp;
 
@@ -239,12 +251,14 @@
                             </a>
                         </div>
                     </div>
-                `} ).join('');
+                    `;
+                } ).join('');
 
-                // After rendering, start the countdowns
                 data.forEach(act => {
-                    const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
-                    if (act.is_open && act.end_time && !isTimeUp) {
+                    // **سطر تشخيصي آخر**
+                    console.log(`النشاط: "${act.title}", وقت الانتهاء: ${act.end_time}`);
+                    if (act.end_time && act.is_open && new Date(act.end_time) > new Date()) {
+                        console.log(`--> بدء العداد للنشاط: "${act.title}"`);
                         startCountdown(act.id, act.end_time);
                     }
                 });
