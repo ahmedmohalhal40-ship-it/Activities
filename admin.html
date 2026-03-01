@@ -8,7 +8,7 @@
     <style>
         body { font-family: 'Tajawal', sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
         .container { max-width: 900px; margin: auto; }
-        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1 ); margin-bottom: 20px; }
         
         /* نظام الفورم */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -48,6 +48,10 @@
                 <input type="text" id="time" placeholder="الساعة">
                 <input type="text" id="loc" placeholder="المكان" value="نادي المعهد">
                 <input type="text" id="link" placeholder="رابط التسجيل">
+                <div class="full-width">
+                    <label for="end_time" style="display: block; margin-bottom: 5px; font-weight: bold;">تاريخ ووقت انتهاء التسجيل</label>
+                    <input type="datetime-local" id="end_time" placeholder="تاريخ ووقت انتهاء التسجيل">
+                </div>
                 <textarea id="desc" placeholder="تفاصيل النشاط (اختياري)"></textarea>
                 <button onclick="saveActivity()" id="saveBtn" class="btn-add full-width">حفظ ونشر النشاط</button>
                 <button onclick="cancelEdit()" id="cancelBtn" class="full-width" style="display:none; background:#999; color:white;">إلغاء التعديل</button>
@@ -73,7 +77,7 @@
 <script>
     const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
 
     function login() {
         if(document.getElementById('adminPass').value === '29112002') {
@@ -108,7 +112,8 @@
             activity_time: document.getElementById('time').value,
             location: document.getElementById('loc').value,
             reg_link: document.getElementById('link').value,
-            details: document.getElementById('desc').value
+            details: document.getElementById('desc').value,
+            end_time: document.getElementById('end_time').value ? new Date(document.getElementById('end_time').value).toISOString() : null
         };
 
         if(id) {
@@ -131,6 +136,15 @@
         document.getElementById('loc').value = act.location;
         document.getElementById('link').value = act.reg_link;
         document.getElementById('desc').value = act.details;
+        
+        // Format the end_time for the datetime-local input
+        if (act.end_time) {
+            const localDate = new Date(new Date(act.end_time).getTime() - (new Date().getTimezoneOffset() * 60000));
+            document.getElementById('end_time').value = localDate.toISOString().slice(0, 16);
+        } else {
+            document.getElementById('end_time').value = "";
+        }
+
         document.getElementById('saveBtn').innerText = "تحديث البيانات";
         document.getElementById('cancelBtn').style.display = "block";
         window.scrollTo(0,0);
@@ -140,7 +154,9 @@
         document.getElementById('actId').value = "";
         document.getElementById('formTitle').innerText = "إضافة نشاط جديد";
         document.getElementById('formBox').classList.remove('edit-active');
-        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+        document.querySelectorAll('input, textarea').forEach(i => {
+            if(i.type !== 'datetime-local') i.value = ""; else i.value = null;
+        });
         document.getElementById('loc').value = "نادي المعهد";
         document.getElementById('saveBtn').innerText = "حفظ ونشر النشاط";
         document.getElementById('cancelBtn').style.display = "none";
