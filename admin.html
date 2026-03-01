@@ -9,19 +9,15 @@
         body { font-family: 'Tajawal', sans-serif; background: #f0f2f5; padding: 20px; direction: rtl; }
         .container { max-width: 900px; margin: auto; }
         .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1 ); margin-bottom: 20px; }
-        
-        /* نظام الفورم */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Tajawal'; width: 100%; box-sizing: border-box; }
         textarea { grid-column: span 2; height: 80px; }
         .full-width { grid-column: span 2; }
-        
         button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         .btn-add { background: #004e64; color: white; width: 100%; margin-top: 10px; }
         .btn-edit { background: #f9a825; color: #004e64; }
         .btn-del { background: #d32f2f; color: white; }
         .btn-status { background: #eee; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 12px; border: 1px solid #eee; text-align: center; }
         th { background: #004e64; color: white; }
@@ -50,7 +46,7 @@
                 <input type="text" id="link" placeholder="رابط التسجيل">
                 <div class="full-width">
                     <label for="end_time" style="display: block; margin-bottom: 5px; font-weight: bold;">تاريخ ووقت انتهاء التسجيل</label>
-                    <input type="datetime-local" id="end_time" placeholder="تاريخ ووقت انتهاء التسجيل">
+                    <input type="datetime-local" id="end_time">
                 </div>
                 <textarea id="desc" placeholder="تفاصيل النشاط (اختياري)"></textarea>
                 <button onclick="saveActivity()" id="saveBtn" class="btn-add full-width">حفظ ونشر النشاط</button>
@@ -105,6 +101,8 @@
 
     async function saveActivity() {
         const id = document.getElementById('actId').value;
+        const endTimeValue = document.getElementById('end_time').value;
+
         const obj = {
             title: document.getElementById('title').value,
             image_url: document.getElementById('img').value,
@@ -113,7 +111,8 @@
             location: document.getElementById('loc').value,
             reg_link: document.getElementById('link').value,
             details: document.getElementById('desc').value,
-            end_time: document.getElementById('end_time').value ? new Date(document.getElementById('end_time').value).toISOString() : null
+            // **هذا هو السطر الذي تم تصحيحه**
+            end_time: endTimeValue ? new Date(endTimeValue).toISOString() : null
         };
 
         if(id) {
@@ -137,8 +136,8 @@
         document.getElementById('link').value = act.reg_link;
         document.getElementById('desc').value = act.details;
         
-        // Format the end_time for the datetime-local input
         if (act.end_time) {
+            // تحويل الوقت من UTC إلى التوقيت المحلي لعرضه بشكل صحيح في حقل الإدخال
             const localDate = new Date(new Date(act.end_time).getTime() - (new Date().getTimezoneOffset() * 60000));
             document.getElementById('end_time').value = localDate.toISOString().slice(0, 16);
         } else {
@@ -151,13 +150,19 @@
     }
 
     function cancelEdit() {
-        document.getElementById('actId').value = "";
         document.getElementById('formTitle').innerText = "إضافة نشاط جديد";
         document.getElementById('formBox').classList.remove('edit-active');
-        document.querySelectorAll('input, textarea').forEach(i => {
-            if(i.type !== 'datetime-local') i.value = ""; else i.value = null;
-        });
+        // مسح جميع الحقول ما عدا حقل المكان
+        document.getElementById('actId').value = "";
+        document.getElementById('title').value = "";
+        document.getElementById('img').value = "";
+        document.getElementById('day').value = "";
+        document.getElementById('time').value = "";
+        document.getElementById('link').value = "";
+        document.getElementById('desc').value = "";
+        document.getElementById('end_time').value = "";
         document.getElementById('loc').value = "نادي المعهد";
+
         document.getElementById('saveBtn').innerText = "حفظ ونشر النشاط";
         document.getElementById('cancelBtn').style.display = "none";
     }
