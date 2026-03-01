@@ -13,14 +13,12 @@
             --accent: #f9a825;
             --bg: #F7F9FC;
         }
-
         body {
             font-family: 'Tajawal', sans-serif;
-            background-color: var(--bg);
+            background-color: var(--bg );
             margin: 0;
             padding: 60px 20px 20px 20px;
         }
-
         .copyright-bar {
             position: fixed;
             top: 0;
@@ -33,14 +31,12 @@
             z-index: 1000;
             font-size: 0.9em;
         }
-
         .header-title {
             text-align: center;
             color: var(--primary);
             margin: 40px 0 20px 0;
             font-size: 2em;
         }
-
         .activities-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -48,7 +44,6 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-
         .activity-card {
             background: white;
             border-radius: 15px;
@@ -59,26 +54,22 @@
             border: 1px solid #eee;
             transition: 0.3s ease;
         }
-
         .activity-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
-
         .activity-img {
             width: 100%;
             height: 180px;
             object-fit: cover;
             background: #eee;
         }
-
         .card-content {
             padding: 20px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
-
         .status-tag {
             font-size: 0.75em;
             padding: 4px 12px;
@@ -87,23 +78,19 @@
             align-self: flex-start;
             margin-bottom: 10px;
         }
-
         .open { background: #e8f5e9; color: #2e7d32; }
         .closed { background: #ffebee; color: #c62828; }
-
         h3 {
             color: var(--primary);
             margin: 0 0 10px 0;
             font-size: 1.3em;
         }
-
         .details-text {
             font-size: 0.9em;
             color: #666;
             margin-bottom: 15px;
             line-height: 1.5;
         }
-
         .meta-info {
             font-size: 0.9em;
             color: #444;
@@ -112,13 +99,11 @@
             align-items: center;
             gap: 10px;
         }
-
         .meta-info i {
             color: var(--accent);
             width: 18px;
             text-align: center;
         }
-
         .btn-reg {
             display: block;
             text-align: center;
@@ -131,9 +116,24 @@
             font-weight: bold;
             transition: 0.3s;
         }
-
         .btn-reg:hover { background: var(--accent); }
         .disabled { background: #ccc !important; pointer-events: none; }
+        
+        /* New Countdown Timer Styles */
+        .countdown-timer {
+            background-color: #fff4e3;
+            border: 1px solid var(--accent);
+            color: var(--primary);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .countdown-timer i {
+            margin-left: 8px;
+        }
 
         @media (max-width: 500px) {
             .activities-grid { grid-template-columns: 1fr; }
@@ -146,13 +146,53 @@
     
     <h1 class="header-title">الأنشطة الطلابية المتاحة</h1>
 
-    <div class="activities-grid" id="activitiesGrid">
-        </div>
+    <div class="activities-grid" id="activitiesGrid"></div>
 
     <script>
         const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxbXhpbnhjY3p4aHFjZmN6enhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEyODA2NzEsImV4cCI6MjA4Njg1NjY3MX0.RUMibOBVFGTjGYBgmCRWSfnkqat7vbacJTr1_78PbN8';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY );
+
+        // Function to start a countdown for a specific activity
+        function startCountdown(activityId, endTime) {
+            const countdownElement = document.getElementById(`timer-${activityId}`);
+            const statusElement = document.getElementById(`status-${activityId}`);
+            const buttonElement = document.getElementById(`button-${activityId}`);
+            
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = new Date(endTime).getTime() - now;
+
+                if (distance < 0) {
+                    clearInterval(interval);
+                    countdownElement.innerHTML = "انتهى وقت التسجيل";
+                    
+                    // Update UI to "Closed"
+                    statusElement.textContent = '● التسجيل مغلق';
+                    statusElement.className = 'status-tag closed';
+                    buttonElement.textContent = 'عذراً، التسجيل مغلق';
+                    buttonElement.classList.add('disabled');
+                    buttonElement.href = '#';
+
+                    // Update the database
+                    _supabase.from('activities').update({ is_open: false }).eq('id', activityId).then();
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let timerText = "ينتهي التسجيل خلال: ";
+                if (days > 0) timerText += `${days} يوم و ${hours} ساعة`;
+                else if (hours > 0) timerText += `${hours} ساعة و ${minutes} دقيقة`;
+                else timerText += `${minutes} دقيقة و ${seconds} ثانية`;
+                
+                countdownElement.innerHTML = `<i class="fas fa-hourglass-half"></i> ${timerText}`;
+
+            }, 1000);
+        }
 
         async function loadActivities() {
             const { data, error } = await _supabase
@@ -163,16 +203,23 @@
             const grid = document.getElementById('activitiesGrid');
             
             if (data && data.length > 0) {
-                grid.innerHTML = data.map(act => `
-                    <div class="activity-card">
+                grid.innerHTML = data.map(act => {
+                    // Check if the activity should be closed based on end_time
+                    const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
+                    const isOpen = act.is_open && !isTimeUp;
+
+                    return `
+                    <div class="activity-card" id="card-${act.id}">
                         <img src="${act.image_url || 'https://via.placeholder.com/350x200?text=No+Image'}" class="activity-img">
                         <div class="card-content">
-                            <span class="status-tag ${act.is_open ? 'open' : 'closed'}">
-                                ${act.is_open ? '● التسجيل مفتوح' : '● التسجيل مغلق'}
+                            <span id="status-${act.id}" class="status-tag ${isOpen ? 'open' : 'closed'}">
+                                ${isOpen ? '● التسجيل مفتوح' : '● التسجيل مغلق'}
                             </span>
                             <h3>${act.title}</h3>
                             ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
                             
+                            ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
+
                             <div class="meta-info">
                                 <i class="fas fa-map-marker-alt"></i> 
                                 <span>المكان: ${act.location || 'نادي المعهد'}</span>
@@ -186,13 +233,22 @@
                                 <span>الساعة: ${act.activity_time || '--'}</span>
                             </div>
 
-                            <a href="${act.is_open ? act.reg_link : '#'}" 
-                               class="btn-reg ${!act.is_open ? 'disabled' : ''}">
-                               ${act.is_open ? 'سجل بياناتك الآن' : 'عذراً، التسجيل مغلق'}
+                            <a id="button-${act.id}" href="${isOpen ? act.reg_link : '#'}" 
+                               class="btn-reg ${!isOpen ? 'disabled' : ''}">
+                               ${isOpen ? 'سجل بياناتك الآن' : 'عذراً، التسجيل مغلق'}
                             </a>
                         </div>
                     </div>
-                `).join('');
+                `} ).join('');
+
+                // After rendering, start the countdowns
+                data.forEach(act => {
+                    const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
+                    if (act.is_open && act.end_time && !isTimeUp) {
+                        startCountdown(act.id, act.end_time);
+                    }
+                });
+
             } else {
                 grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>لا توجد أنشطة متاحة حالياً.</p>";
             }
