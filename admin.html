@@ -43,6 +43,7 @@
                 <input type="text" id="day" placeholder="اليوم والتاريخ">
                 <input type="text" id="time" placeholder="الساعة">
                 <input type="text" id="loc" placeholder="المكان" value="نادي المعهد">
+                <input type="text" id="map_link" placeholder="رابط خرائط جوجل" value="https://maps.app.goo.gl/hQpf8YCzLtuoKzrB8?g_st=aw">
                 <input type="text" id="link" placeholder="رابط التسجيل">
                 <div class="full-width">
                     <label for="end_time" style="display: block; margin-bottom: 5px; font-weight: bold;">تاريخ ووقت انتهاء التسجيل</label>
@@ -109,9 +110,9 @@
             day_date: document.getElementById('day').value,
             activity_time: document.getElementById('time').value,
             location: document.getElementById('loc').value,
+            map_link: document.getElementById('map_link').value, // السطر الجديد
             reg_link: document.getElementById('link').value,
             details: document.getElementById('desc').value,
-            // **هذا هو السطر الذي تم تصحيحه**
             end_time: endTimeValue ? new Date(endTimeValue).toISOString() : null
         };
 
@@ -133,6 +134,7 @@
         document.getElementById('day').value = act.day_date;
         document.getElementById('time').value = act.activity_time;
         document.getElementById('loc').value = act.location;
+        document.getElementById('map_link').value = act.map_link || "https://maps.app.goo.gl/hQpf8YCzLtuoKzrB8?g_st=aw";
         document.getElementById('link').value = act.reg_link;
         document.getElementById('desc').value = act.details;
         
@@ -162,6 +164,7 @@
         document.getElementById('desc').value = "";
         document.getElementById('end_time').value = "";
         document.getElementById('loc').value = "نادي المعهد";
+        document.getElementById('map_link').value = "https://maps.app.goo.gl/hQpf8YCzLtuoKzrB8?g_st=aw";
 
         document.getElementById('saveBtn').innerText = "حفظ ونشر النشاط";
         document.getElementById('cancelBtn').style.display = "none";
