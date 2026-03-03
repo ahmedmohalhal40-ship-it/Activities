@@ -235,6 +235,11 @@
                             <div class="meta-info">
                                 <i class="fas fa-map-marker-alt"></i> 
                                 <span>المكان: ${act.location || 'نادي المعهد'}</span>
+                                ${act.map_link ? `
+                                    <a href="${act.map_link}" target="_blank" style="color: var(--accent); margin-right: 10px; text-decoration: none;">
+                                        <i class="fas fa-location-arrow"></i> فتح الخريطة
+                                    </a>
+                                ` : ''}
                             </div>
                             <div class="meta-info">
                                 <i class="fas fa-calendar-day"></i> 
