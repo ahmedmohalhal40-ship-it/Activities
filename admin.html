@@ -53,12 +53,6 @@
                 <button onclick="saveActivity()" id="saveBtn" class="btn-add full-width">حفظ ونشر النشاط</button>
                 <button onclick="cancelEdit()" id="cancelBtn" class="full-width" style="display:none; background:#999; color:white;">إلغاء التعديل</button>
             </div>
-            <div class="full-width" style="margin-bottom:10px;">
-                <label>
-                    <input type="checkbox" id="is_open" checked>
-                    النشاط مفتوح
-                </label>
-            </div>
         </div>
 
         <div class="box">
@@ -120,8 +114,6 @@
             reg_link: document.getElementById('link').value,
             details: document.getElementById('desc').value,
             end_time: endTimeValue ? new Date(endTimeValue).toISOString() : null
-            is_open: document.getElementById('is_open').checked
-
         };
 
         if(id) {
@@ -145,7 +137,6 @@
         document.getElementById('map_link').value = act.map_link || "https://maps.app.goo.gl/hQpf8YCzLtuoKzrB8?g_st=aw";
         document.getElementById('link').value = act.reg_link;
         document.getElementById('desc').value = act.details;
-        document.getElementById('is_open').checked = act.is_open;
         
         if (act.end_time) {
             // تحويل الوقت من UTC إلى التوقيت المحلي لعرضه بشكل صحيح في حقل الإدخال
