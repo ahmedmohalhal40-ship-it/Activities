@@ -195,7 +195,7 @@
 
     <h1 class="header-title">الأنشطة الطلابية المتاحة</h1>
 
-    <h1 class="header-title">الأنشطة الطلابية المتاحة</h1> <div class="activities-grid" id="openActivities"></div>  <h1 class="header-title" style="margin-top:50px;">الأرشيف</h1> <div class="activities-grid" id="closedActivities"></div>
+    <div class="activities-grid" id="activitiesGrid"></div>
 
     <script>
         const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
@@ -264,58 +264,11 @@
             // **هذا السطر مهم جداً للتشخيص**
             console.log("البيانات التي تم جلبها من Supabase:", data); 
 
-            const openGrid = document.getElementById('openActivities'); const closedGrid = document.getElementById('closedActivities');
+            const grid = document.getElementById('activitiesGrid');
             if (data && data.length > 0) {
-                let openActivities = [];
-                let closedActivities = [];
-                grid.innerHTML = openActivities.map(act => {
+                grid.innerHTML = data.map(act => {
                     const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
                     const isOpen = act.is_open && !isTimeUp;
-                    if(isOpen){
-                        openActivities.push(act);
-                    }else{
-                        closedActivities.push(act);
-                        archive.innerHTML = closedActivities.map(act => {
-
-    return `
-    <div class="activity-card">
-        <img src="${act.image_url || 'https://via.placeholder.com/350x200'}" class="activity-img">
-
-        <div class="card-content">
-
-            <span class="status-tag closed">
-                ● التسجيل مغلق
-            </span>
-
-            <h3>${act.title}</h3>
-
-            ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
-
-            <div class="meta-info">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>المكان: ${act.location || 'نادي المعهد'}</span>
-            </div>
-
-            <div class="meta-info">
-                <i class="fas fa-calendar-day"></i>
-                <span>اليوم: ${act.day_date}</span>
-            </div>
-
-            <div class="meta-info">
-                <i class="fas fa-clock"></i>
-                <span>الساعة: ${act.activity_time || '--'}</span>
-            </div>
-
-            <a class="btn-reg disabled">
-                التسجيل مغلق
-            </a>
-
-        </div>
-    </div>
-    `;
-
-}).join('');
-                    }
 
                     return `
                     <div class="activity-card" id="card-${act.id}">
