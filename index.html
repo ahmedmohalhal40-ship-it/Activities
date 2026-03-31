@@ -29,7 +29,11 @@
             --shadow-hover: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Tajawal', sans-serif;
@@ -40,102 +44,439 @@
             overflow-x: hidden;
         }
 
+        /* خلفية متحركة */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
 
+        /* شريط العلامة التجارية */
         .copyright-bar {
-            position: fixed; top: 0; left: 0; width: 100%;
-            background: rgba(26, 54, 93, 0.95); backdrop-filter: blur(10px);
-            color: white; text-align: center; padding: 12px; z-index: 1000;
-            font-size: 0.85em; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(26, 54, 93, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            z-index: 1000;
+            font-size: 0.85em;
+            font-weight: 500;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* قسم القيادة */
         .leaders-section {
-            display: flex; justify-content: center; gap: 60px;
-            margin: 30px 0 40px; flex-wrap: wrap; position: relative; z-index: 1;
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin: 30px 0 40px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
         }
 
-        .leader-card { text-align: center; transition: transform 0.3s ease; }
-        .leader-card:hover { transform: translateY(-10px); }
+        .leader-card {
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .leader-card:hover {
+            transform: translateY(-10px);
+        }
 
         .leader-title {
-            color: white; font-weight: 700; margin-bottom: 15px; font-size: 1.1em;
-            background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 20px;
-            backdrop-filter: blur(10px); display: inline-block;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            display: inline-block;
         }
 
-        .leader-img-container { position: relative; display: inline-block; }
+        .leader-img-container {
+            position: relative;
+            display: inline-block;
+        }
+
         .leader-img {
-            width: 120px; height: 120px; border-radius: 50%;
-            border: 4px solid white; object-fit: cover; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            object-fit: cover;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transition: all 0.4s ease;
         }
 
-        .leader-name { color: white; font-size: 1.2em; font-weight: 700; margin-top: 15px; }
+        .leader-card:hover .leader-img {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
 
+        .leader-img-container::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            border-top-color: transparent;
+            animation: spin 8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .leader-name {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-top: 15px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* العنوان الرئيسي */
         .header-title {
-            text-align: center; color: white; margin: 50px 0 40px;
-            font-size: 2.5em; font-weight: 800; position: relative; z-index: 1;
+            text-align: center;
+            color: white;
+            margin: 50px 0 40px;
+            font-size: 2.5em;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
+        .header-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: var(--accent);
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        /* شبكة الأنشطة */
         .activities-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 30px; max-width: 1400px; margin: 0 auto; position: relative; z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .activity-card {
-            background: var(--card-bg); border-radius: 24px; overflow: hidden;
-            display: flex; flex-direction: column; transition: all 0.4s ease;
-            animation: fadeInUp 0.6s ease forwards; opacity: 0;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
         }
 
-        .activity-card:hover { transform: translateY(-12px); box-shadow: var(--shadow-hover); }
+        .activity-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: var(--shadow-hover);
+        }
 
-        .activity-img { width: 100%; height: 200px; object-fit: cover; }
+        .activity-card:hover::before {
+            transform: scaleX(1);
+        }
 
-        .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .activity-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
 
+        .activity-card:hover .activity-img {
+            transform: scale(1.1);
+        }
+
+        .card-content {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* شارة الحالة */
         .status-tag {
-            font-size: 0.8em; padding: 8px 18px; border-radius: 50px;
-            font-weight: 700; align-self: flex-start; margin-bottom: 15px;
-            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8em;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: 700;
+            align-self: flex-start;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s infinite;
         }
 
-        .status-tag.open { background: #d1fae5; color: #065f46; }
-        .status-tag.closed { background: #fee2e2; color: #991b1b; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
 
+        .status-tag.open {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .status-tag.closed {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            animation: none;
+        }
+
+        .status-tag::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        h3 {
+            color: var(--primary);
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .details-text {
+            font-size: 0.95em;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        /* العداد التنازلي */
         .countdown-timer {
-            background: #fef3c7; border: 2px solid var(--accent-light);
-            color: var(--primary); padding: 12px; border-radius: 12px;
-            text-align: center; margin-bottom: 20px; font-weight: 700;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid var(--accent-light);
+            color: var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
         }
 
+        .countdown-timer i {
+            color: var(--accent);
+            font-size: 1.2em;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* معلومات التفاصيل */
         .meta-info {
-            font-size: 0.95em; margin-bottom: 12px; display: flex;
-            align-items: center; gap: 12px; padding: 8px 12px;
-            background: #f8fafc; border-radius: 10px;
+            font-size: 0.95em;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            transition: background 0.3s ease;
         }
 
+        .meta-info:hover {
+            background: #f1f5f9;
+        }
+
+        .meta-info i {
+            color: var(--secondary);
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .meta-info a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .meta-info a:hover {
+            color: var(--primary);
+        }
+
+        /* الزر */
         .btn-reg {
-            display: block; text-align: center; background: var(--primary);
-            color: white; padding: 15px; border-radius: 12px;
-            text-decoration: none; font-weight: 700; transition: all 0.3s;
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            margin-top: auto;
+            font-weight: 700;
+            font-size: 1.05em;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(26, 54, 93, 0.3);
         }
 
-        .btn-reg:hover { background: var(--accent); transform: translateY(-3px); }
-        .btn-reg.disabled { background: #9ca3af !important; pointer-events: none; }
+        .btn-reg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
 
+        .btn-reg:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(26, 54, 93, 0.4);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        }
+
+        .btn-reg:hover::before {
+            left: 100%;
+        }
+
+        .btn-reg.disabled {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        .btn-reg i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-reg:hover i {
+            transform: translateX(-5px);
+        }
+
+        /* رسالة لا توجد أنشطة */
+        .no-activities {
+            text-align: center;
+            grid-column: 1/-1;
+            color: white;
+            font-size: 1.3em;
+            padding: 60px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* التجاوب */
+        @media (max-width: 768px) {
+            .header-title {
+                font-size: 1.8em;
+            }
+            
+            .leaders-section {
+                gap: 30px;
+            }
+            
+            .leader-img {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .activities-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .activity-card {
+                border-radius: 20px;
+            }
+        }
+
+        /* تأثيرات دخول البطاقات */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .activity-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .activity-card:nth-child(1) { animation-delay: 0.1s; }
+        .activity-card:nth-child(2) { animation-delay: 0.2s; }
+        .activity-card:nth-child(3) { animation-delay: 0.3s; }
+        .activity-card:nth-child(4) { animation-delay: 0.4s; }
+        .activity-card:nth-child(5) { animation-delay: 0.5s; }
+        .activity-card:nth-child(6) { animation-delay: 0.6s; }
         .archive-container { max-width: 1400px; margin: 40px auto; width: 100%; z-index: 1; position: relative; }
         .accordion-btn {
             width: 100%; background: rgba(255,255,255,0.15); color: white; padding: 15px;
@@ -145,11 +486,6 @@
         }
         .accordion-content { display: none; padding-top: 20px; }
         .accordion-content.show { display: grid; }
-
-        /* Delays */
-        .activity-card:nth-child(1) { animation-delay: 0.1s; }
-        .activity-card:nth-child(2) { animation-delay: 0.2s; }
-        .activity-card:nth-child(3) { animation-delay: 0.3s; }
     </style>
 </head>
 <body>
@@ -161,24 +497,29 @@
     <div class="leaders-section">
         <div class="leader-card">
             <div class="leader-title">رائد الأسرة</div>
-            <div class="leader-img-container"><img src="رائد الأسرة.jpeg" class="leader-img"></div>
+            <div class="leader-img-container">
+                <img src="رائد الأسرة.jpeg" alt="رائد الأسرة" class="leader-img">
+            </div>
             <div class="leader-name">يوسف هاني</div>
         </div>
+
         <div class="leader-card">
             <div class="leader-title">الأمين المساعد</div>
-            <div class="leader-img-container"><img src="الأمين المساعد.jpeg" class="leader-img"></div>
+            <div class="leader-img-container">
+                <img src="الأمين المساعد.jpeg" alt="الأمين المساعد" class="leader-img">
+            </div>
             <div class="leader-name">محمد عصام</div>
         </div>
     </div>
 
     <h1 class="header-title">الأنشطة الطلابية المتاحة</h1>
     <div class="activities-grid" id="activitiesGrid"></div>
-
+    
     <div class="archive-container" id="archiveSection" style="display:none;">
         <button class="accordion-btn" onclick="document.getElementById('archiveContent').classList.toggle('show')">
             أنشطة سابقة متاح التسجيل بها <span><i class="fas fa-chevron-down"></i></span>
         </button>
-        <div class="activities-grid accordion-content" id="archiveContent"></div>
+        <div class="activities-grid accordion-content" id="archiveContent" style="margin-top:20px"></div>
     </div>
 
     <script>
@@ -190,65 +531,92 @@
             const countdownElement = document.getElementById(`timer-${activityId}`);
             if (!countdownElement) return; 
 
+            const statusElement = document.getElementById(`status-${activityId}`);
+            const buttonElement = document.getElementById(`button-${activityId}`);
             const targetTime = new Date(endTime).getTime();
+
             const interval = setInterval(() => {
                 const now = new Date().getTime();
                 const distance = targetTime - now;
 
                 if (distance < 0) {
                     clearInterval(interval);
-                    countdownElement.innerHTML = 'انتهى وقت التسجيل';
+                    countdownElement.innerHTML = '<i class="fas fa-clock"></i> انتهى وقت التسجيل';
+                    if (statusElement) {
+                        statusElement.innerHTML = '<span></span> التسجيل مغلق';
+                        statusElement.className = 'status-tag closed';
+                    }
+                    if (buttonElement) {
+                        buttonElement.innerHTML = '<i class="fas fa-lock"></i> عذراً، التسجيل مغلق';
+                        buttonElement.classList.add('disabled');
+                        buttonElement.href = '#';
+                    }
+                    _supabase.from('activities').select('is_open').eq('id', activityId).single().then(({data}) => {
+                        if(data && data.is_open) {
+                            _supabase.from('activities').update({ is_open: false }).eq('id', activityId).then();
+                        }
+                    });
                     return;
                 }
 
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                let timerText = "ينتهي التسجيل خلال: ";
+                if (days > 0) timerText += `${days} يوم و ${hours} ساعة`;
+                else if (hours > 0) timerText += `${hours} ساعة و ${minutes} دقيقة`;
+                else timerText += `${minutes} دقيقة و ${seconds} ثانية`;
                 
-                countdownElement.innerHTML = `<i class="fas fa-clock"></i> ينتهي خلال: ${days} يوم و ${hours} ساعة`;
+                countdownElement.innerHTML = `<i class="fas fa-hourglass-half"></i> ${timerText}`;
             }, 1000);
         }
 
         async function loadActivities() {
             const { data, error } = await _supabase.from('activities').select('*').order('id', { ascending: false });
             if (error) return;
-
+        
             const grid = document.getElementById('activitiesGrid');
             const archiveContent = document.getElementById('archiveContent');
             const archiveSection = document.getElementById('archiveSection');
-
+        
             const activeActs = data.filter(a => !a.is_archived);
             const archivedActs = data.filter(a => a.is_archived);
-
+        
             const renderCard = (act) => {
                 const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
                 const isOpen = act.is_open && !isTimeUp;
                 return `
-                <div class="activity-card" style="opacity:1">
-                    <img src="${act.image_url || 'https://via.placeholder.com/350x200'}" class="activity-img">
+                <div class="activity-card" id="card-${act.id}">
+                    <img src="${act.image_url || 'https://via.placeholder.com/350x200?text=No+Image'}" class="activity-img">
                     <div class="card-content">
-                        <span class="status-tag ${isOpen ? 'open' : 'closed'}">
-                            ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
+                        <span id="status-${act.id}" class="status-tag ${isOpen ? 'open' : 'closed'}">
+                            <span></span> ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
                         </span>
                         <h3>${act.title}</h3>
                         ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
                         ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
-                        <div class="meta-info"><i class="fas fa-map-marker-alt"></i> ${act.location || 'نادي المعهد'}</div>
-                        <div class="meta-info"><i class="fas fa-calendar-day"></i> ${act.day_date}</div>
-                        <a href="${isOpen ? act.reg_link : '#'}" class="btn-reg ${!isOpen ? 'disabled' : ''}">
-                            ${isOpen ? 'سجل بياناتك الآن' : 'التسجيل مغلق'}
+                        <div class="meta-info">
+                            <i class="fas fa-map-marker-alt"></i> <span>المكان: ${act.location || 'نادي المعهد'}</span>
+                        </div>
+                        <div class="meta-info">
+                            <i class="fas fa-calendar-day"></i> <span>اليوم: ${act.day_date}</span>
+                        </div>
+                        <a id="button-${act.id}" href="${isOpen ? act.reg_link : '#'}" class="btn-reg ${!isOpen ? 'disabled' : ''}">
+                            ${isOpen ? '<i class="fas fa-edit"></i> سجل بياناتك الآن' : '<i class="fas fa-lock"></i> عذراً، التسجيل مغلق'}
                         </a>
                     </div>
                 </div>`;
             };
-
+        
             grid.innerHTML = activeActs.length > 0 ? activeActs.map(renderCard).join('') : '<div class="no-activities">لا توجد أنشطة حالية</div>';
-
+        
             if (archivedActs.length > 0) {
                 archiveSection.style.display = 'block';
                 archiveContent.innerHTML = archivedActs.map(renderCard).join('');
             }
-
+        
             data.forEach(act => {
                 if (act.end_time && act.is_open && new Date(act.end_time) > new Date()) {
                     startCountdown(act.id, act.end_time);
