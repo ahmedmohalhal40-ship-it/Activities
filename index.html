@@ -585,30 +585,45 @@
             const archivedActs = data.filter(a => a.is_archived);
         
             const renderCard = (act) => {
-                const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
-                const isOpen = act.is_open && !isTimeUp;
-                return `
-                <div class="activity-card" id="card-${act.id}">
-                    <img src="${act.image_url || 'https://via.placeholder.com/350x200?text=No+Image'}" class="activity-img">
-                    <div class="card-content">
-                        <span id="status-${act.id}" class="status-tag ${isOpen ? 'open' : 'closed'}">
-                            <span></span> ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
-                        </span>
-                        <h3>${act.title}</h3>
-                        ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
-                        ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
-                        <div class="meta-info">
-                            <i class="fas fa-map-marker-alt"></i> <span>المكان: ${act.location || 'نادي المعهد'}</span>
-                        </div>
-                        <div class="meta-info">
-                            <i class="fas fa-calendar-day"></i> <span>اليوم: ${act.day_date}</span>
-                        </div>
-                        <a id="button-${act.id}" href="${isOpen ? act.reg_link : '#'}" class="btn-reg ${!isOpen ? 'disabled' : ''}">
-                            ${isOpen ? '<i class="fas fa-edit"></i> سجل بياناتك الآن' : '<i class="fas fa-lock"></i> عذراً، التسجيل مغلق'}
-                        </a>
-                    </div>
-                </div>`;
-            };
+                            const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
+                            const isOpen = act.is_open && !isTimeUp;
+                            return `
+                            <div class="activity-card" style="opacity:1">
+                                <img src="${act.image_url || 'https://via.placeholder.com/350x200'}" class="activity-img">
+                                <div class="card-content">
+                                    <span class="status-tag ${isOpen ? 'open' : 'closed'}">
+                                        ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
+                                    </span>
+                                    <h3>${act.title}</h3>
+                                    ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
+                                    ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
+                                    
+                                    <div class="meta-info">
+                                        <i class="fas fa-map-marker-alt"></i> 
+                                        <span>المكان: ${act.location || 'نادي المعهد'}</span>
+                                        ${act.map_link ? `
+                                            <a href="${act.map_link}" target="_blank" style="margin-right: auto; font-size: 0.9em; color: var(--secondary);">
+                                                <i class="fas fa-location-arrow"></i> فتح الخريطة
+                                            </a>
+                                        ` : ''}
+                                    </div>
+            
+                                    <div class="meta-info">
+                                        <i class="fas fa-calendar-day"></i> 
+                                        <span>اليوم: ${act.day_date || 'لم يحدد بعد'}</span>
+                                    </div>
+            
+                                    <div class="meta-info">
+                                        <i class="fas fa-clock"></i> 
+                                        <span>الساعة: ${act.activity_time || 'سيتم التحديد لاحقاً'}</span>
+                                    </div>
+            
+                                    <a href="${isOpen ? act.reg_link : '#'}" class="btn-reg ${!isOpen ? 'disabled' : ''}">
+                                        ${isOpen ? 'سجل بياناتك الآن' : 'التسجيل مغلق'}
+                                    </a>
+                                </div>
+                            </div>`;
+                        };
         
             grid.innerHTML = activeActs.length > 0 ? activeActs.map(renderCard).join('') : '<div class="no-activities">لا توجد أنشطة حالية</div>';
         
