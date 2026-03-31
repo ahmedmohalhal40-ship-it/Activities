@@ -84,21 +84,27 @@
         } else { alert("خطأ في كلمة المرور!"); }
     }
 
-    async function loadTable() {
-        const { data } = await _supabase.from('activities').select('*').order('id', {ascending: false});
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = data.map(act => `
-            <tr>
-                <td>${act.title}</td>
-                <td style="color:${act.is_open ? 'green':'red'}">${act.is_open ? 'مفتوح':'مغلق'}</td>
-                <td>
-                    <button class="btn-edit" onclick='editMode(${JSON.stringify(act)})'>تعديل</button>
-                    <button class="btn-status" onclick="toggleStatus(${act.id}, ${act.is_open})">⚙️</button>
-                    <button class="btn-del" onclick="deleteAct(${act.id})">حذف</button>
-                </td>
-            </tr>
-        `).join('');
-    }
+async function loadTable() {
+    const { data } = await _supabase.from('activities').select('*').order('id', {ascending: false});
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = data.map(act => `
+        <tr>
+            <td>${act.title} ${act.is_archived ? '<small style="color:orange">(مؤرشف)</small>' : ''}</td>
+            <td style="color:${act.is_open ? 'green':'red'}">${act.is_open ? 'مفتوح':'مغلق'}</td>
+            <td>
+                <button class="btn-edit" onclick='editMode(${JSON.stringify(act)})'>تعديل</button>
+                <button class="btn-status" onclick="toggleStatus(${act.id}, ${act.is_open})">⚙️</button>
+                <button class="btn-status" onclick="toggleArchive(${act.id}, ${act.is_archived})" title="أرشفة/تنشيط">${act.is_archived ? '♻️' : '📦'}</button>
+                <button class="btn-del" onclick="deleteAct(${act.id})">حذف</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function toggleArchive(id, current) {
+    await _supabase.from('activities').update({ is_archived: !current }).eq( 'id', id);
+    loadTable();
+}
 
     async function saveActivity() {
         const id = document.getElementById('actId').value;
