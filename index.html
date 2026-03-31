@@ -477,6 +477,15 @@
         .activity-card:nth-child(4) { animation-delay: 0.4s; }
         .activity-card:nth-child(5) { animation-delay: 0.5s; }
         .activity-card:nth-child(6) { animation-delay: 0.6s; }
+        .archive-container { max-width: 1400px; margin: 40px auto; width: 100%; z-index: 1; position: relative; }
+.accordion-btn {
+    width: 100%; background: rgba(255,255,255,0.15); color: white; padding: 15px;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; cursor: pointer;
+    font-size: 1.2em; font-family: 'Tajawal'; font-weight: bold; display: flex;
+    justify-content: space-between; align-items: center; backdrop-filter: blur(5px);
+}
+.accordion-content { display: none; padding-top: 20px; }
+.accordion-content.show { display: grid; }
     </style>
 </head>
 <body>
@@ -504,8 +513,14 @@
     </div>
 
     <h1 class="header-title">الأنشطة الطلابية المتاحة</h1>
+<div class="activities-grid" id="activitiesGrid"></div>
 
-    <div class="activities-grid" id="activitiesGrid"></div>
+<div class="archive-container" id="archiveSection" style="display:none;">
+    <button class="accordion-btn" onclick="document.getElementById('archiveContent').classList.toggle('show')">
+        أنشطة مؤرشفة <span><i class="fas fa-chevron-down"></i></span>
+    </button>
+    <div class="activities-grid accordion-content" id="archiveContent" style="margin-top:20px"></div>
+</div>
 
     <script>
         const SUPABASE_URL = 'https://zqmxinxcczxhqcfczzxk.supabase.co';
@@ -558,71 +573,56 @@
             }, 1000);
         }
 
-        async function loadActivities() {
-            console.log("بدء تحميل الأنشطة...");
-            const { data, error } = await _supabase
-                .from('activities')
-                .select('*')
-                .order('id', { ascending: false });
+async function loadActivities() {
+    const { data, error } = await _supabase.from('activities').select('*').order('id', { ascending: false });
+    if (error) return;
 
-            if (error) {
-                console.error("خطأ في جلب البيانات:", error);
-                return;
-            }
+    const grid = document.getElementById('activitiesGrid');
+    const archiveContent = document.getElementById('archiveContent');
+    const archiveSection = document.getElementById('archiveSection');
 
-            console.log("البيانات التي تم جلبها من Supabase:", data); 
+    const activeActs = data.filter(a => !a.is_archived);
+    const archivedActs = data.filter(a => a.is_archived);
 
-            const grid = document.getElementById('activitiesGrid');
-            if (data && data.length > 0) {
-                grid.innerHTML = data.map(act => {
-                    const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
-                    const isOpen = act.is_open && !isTimeUp;
+    const renderCard = (act) => {
+        const isTimeUp = act.end_time && new Date(act.end_time) < new Date();
+        const isOpen = act.is_open && !isTimeUp;
+        return `
+        <div class="activity-card" id="card-${act.id}">
+            <img src="${act.image_url || 'https://via.placeholder.com/350x200?text=No+Image'}" class="activity-img">
+            <div class="card-content">
+                <span id="status-${act.id}" class="status-tag ${isOpen ? 'open' : 'closed'}">
+                    <span></span> ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
+                </span>
+                <h3>${act.title}</h3>
+                ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
+                ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
+                <div class="meta-info">
+                    <i class="fas fa-map-marker-alt"></i> <span>المكان: ${act.location || 'نادي المعهد'}</span>
+                </div>
+                <div class="meta-info">
+                    <i class="fas fa-calendar-day"></i> <span>اليوم: ${act.day_date}</span>
+                </div>
+                <a id="button-${act.id}" href="${isOpen ? act.reg_link : '#'}" class="btn-reg ${!isOpen ? 'disabled' : ''}">
+                    ${isOpen ? '<i class="fas fa-edit"></i> سجل بياناتك الآن' : '<i class="fas fa-lock"></i> عذراً، التسجيل مغلق'}
+                </a>
+            </div>
+        </div>`;
+    };
 
-                    return `
-                    <div class="activity-card" id="card-${act.id}">
-                        <img src="${act.image_url || 'https://via.placeholder.com/350x200?text=No+Image'}" class="activity-img">
-                        <div class="card-content">
-                            <span id="status-${act.id}" class="status-tag ${isOpen ? 'open' : 'closed'}">
-                                <span></span> ${isOpen ? 'التسجيل مفتوح' : 'التسجيل مغلق'}
-                            </span>
-                            <h3>${act.title}</h3>
-                            ${act.details ? `<p class="details-text">${act.details}</p>` : ''}
-                            
-                            ${act.end_time && isOpen ? `<div class="countdown-timer" id="timer-${act.id}"></div>` : ''}
+    grid.innerHTML = activeActs.length > 0 ? activeActs.map(renderCard).join('') : '<div class="no-activities">لا توجد أنشطة حالية</div>';
 
-                            <div class="meta-info">
-                                <i class="fas fa-map-marker-alt"></i> 
-                                <span>المكان: ${act.location || 'نادي المعهد'}</span>
-                                ${act.map_link ? `
-                                    <a href="${act.map_link}" target="_blank">
-                                        <i class="fas fa-location-arrow"></i> فتح الخريطة
-                                    </a>
-                                ` : ''}
-                            </div>
-                            <div class="meta-info">
-                                <i class="fas fa-calendar-day"></i> 
-                                <span>اليوم: ${act.day_date}</span>
-                            </div>
-                            <div class="meta-info">
-                                <i class="fas fa-clock"></i> 
-                                <span>الساعة: ${act.activity_time || '--'}</span>
-                            </div>
+    if (archivedActs.length > 0) {
+        archiveSection.style.display = 'block';
+        archiveContent.innerHTML = archivedActs.map(renderCard).join('');
+    }
 
-                            <a id="button-${act.id}" href="${isOpen ? act.reg_link : '#'}" 
-                               class="btn-reg ${!isOpen ? 'disabled' : ''}">
-                               ${isOpen ? '<i class="fas fa-edit"></i> سجل بياناتك الآن' : '<i class="fas fa-lock"></i> عذراً، التسجيل مغلق'}
-                            </a>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-
-                data.forEach(act => {
-                    console.log(`النشاط: "${act.title}", وقت الانتهاء: ${act.end_time}`);
-                    if (act.end_time && act.is_open && new Date(act.end_time) > new Date()) {
-                        console.log(`--> بدء العداد للنشاط: "${act.title}"`);
-                        startCountdown(act.id, act.end_time);
-                    }
+    data.forEach(act => {
+        if (act.end_time && act.is_open && new Date(act.end_time) > new Date()) {
+            startCountdown(act.id, act.end_time);
+        }
+    });
+}
                 });
 
             } else {
